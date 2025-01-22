@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkMermaidBundle=self.webpackChunkMermaidBundle||[]).push([[720],{9720:(e,r,c)=>{c.d(r,{createArchitectureServices:()=>u.S});var u=c(9936);c(9369)}}]);
