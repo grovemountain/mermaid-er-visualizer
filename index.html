@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Database Structure Visualization</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ startOnLoad: false });
+
+        async function loadAndRenderDiagram() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const files = urlParams.get('files')?.split(',') || ['database.mmd'];
+            const entities = urlParams.get('entities')?.split(',') || [];
+            
+            let combinedDiagram = '';
+            
+            for (const file of files) {
+                const response = await fetch(file);
+                const content = await response.text();
+                combinedDiagram += content + '\n';
+            }
+            
+            if (entities.length > 0) {
+                // Filter diagram to show only specified entities and their relationships
+                // Implementation needed based on your specific needs
+            }
+            
+            const element = document.querySelector("#diagram");
+            const { svg } = await mermaid.render('graphDiv', combinedDiagram);
+            element.innerHTML = svg;
+        }
+    </script>
+</head>
+<body>
+    <div id="diagram"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', loadAndRenderDiagram);
+    </script>
+</body>
+</html>
