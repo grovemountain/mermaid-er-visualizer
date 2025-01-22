@@ -11,6 +11,7 @@ function parseAndFilterMermaidDiagram(diagramText, excludedEntities) {
     let currentEntity = null;
     let skipCurrentEntity = false;
 
+    // First pass: Remove excluded entities and their relationships
     lines.forEach(line => {
         const trimmedLine = line.trim();
 
@@ -58,7 +59,66 @@ function parseAndFilterMermaidDiagram(diagramText, excludedEntities) {
         }
     });
 
-    return filteredLines.join('\n');
+    // Second pass: Find entities that are actually used in relationships
+    const entitiesInRelationships = new Set();
+    filteredLines.forEach(line => {
+        const trimmedLine = line.trim();
+        if (trimmedLine.includes('||') || trimmedLine.includes('--|') || 
+            trimmedLine.includes('--o') || trimmedLine.includes('o--')) {
+            const parts = trimmedLine.split(/\s+/);
+            entitiesInRelationships.add(parts[0]);
+            entitiesInRelationships.add(parts[2]);
+        }
+    });
+
+    // Third pass: Keep only entities that have relationships
+    const finalLines = [];
+    currentEntity = null;
+    skipCurrentEntity = false;
+
+    filteredLines.forEach(line => {
+        const trimmedLine = line.trim();
+
+        // Always keep erDiagram line
+        if (trimmedLine === 'erDiagram') {
+            finalLines.push(line);
+            return;
+        }
+
+        // Always keep relationship lines (they've already been filtered)
+        if (trimmedLine.includes('||') || trimmedLine.includes('--|') || 
+            trimmedLine.includes('--o') || trimmedLine.includes('o--')) {
+            finalLines.push(line);
+            return;
+        }
+
+        // Check for entity definition start
+        if (trimmedLine.includes('{')) {
+            currentEntity = trimmedLine.split(/\s+/)[0];
+            skipCurrentEntity = !entitiesInRelationships.has(currentEntity);
+            if (!skipCurrentEntity) {
+                finalLines.push(line);
+            }
+            return;
+        }
+
+        // Check for entity definition end
+        if (trimmedLine.includes('}')) {
+            if (!skipCurrentEntity) {
+                finalLines.push(line);
+            }
+            currentEntity = null;
+            skipCurrentEntity = false;
+            return;
+        }
+
+        // Handle entity attributes
+        if (currentEntity && !skipCurrentEntity) {
+            finalLines.push(line);
+        }
+    });
+
+    return finalLines.join('\n');
 }
 
 async function loadAndRenderDiagram() {
@@ -91,7 +151,7 @@ async function loadAndRenderDiagram() {
     }
 
     try {
-        // Filter out excluded entities
+        // Filter out excluded entities and orphaned entities
         const filteredDiagram = parseAndFilterMermaidDiagram(combinedDiagram, excludeEntities);
         console.log('Filtered diagram:', filteredDiagram); // For debugging
         
