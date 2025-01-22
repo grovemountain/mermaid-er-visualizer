@@ -13,3 +13,8 @@ erDiagram
         string name
         float price
     }
+    CUSTOMER ||--o{ CITY : lives
+    CITY {
+        string city
+    }
+    ORDER ||--o{ CITY : "placed in"
