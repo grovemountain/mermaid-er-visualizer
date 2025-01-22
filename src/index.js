@@ -131,7 +131,7 @@ async function loadAndRenderDiagram() {
     });
     
     const urlParams = new URLSearchParams(window.location.search);
-    const files = urlParams.get('files')?.split(',') || ['database.mmd'];
+    const files = urlParams.get('files')?.split(',') || ['diagrams/database.mmd'];
     const excludeEntities = urlParams.get('exclude')?.split(',') || [];
     
     let combinedDiagram = '';
